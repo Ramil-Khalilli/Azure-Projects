@@ -1,0 +1,113 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AvgUsagePerAMPM",
+						"type": "DatasetReference"
+					},
+					"name": "AvgUsagePerAMandPM"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText2",
+						"type": "DatasetReference"
+					},
+					"name": "AvgUsagePerWeekday"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1",
+					"description": "Changing Data Types of the Columns Hour, KWH"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "aggregate2"
+				},
+				{
+					"name": "sort1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     limit: 100,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"select1 derive(usage = toInteger(usage),",
+				"          Hour = toInteger(Hour)) ~> derivedColumn1",
+				"source1 select(mapColumn(",
+				"          Hour,",
+				"          am_pm,",
+				"          Date,",
+				"          usage = KWH,",
+				"          unit = usage,",
+				"          weekday",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"derivedColumn1 aggregate(groupBy(am_pm),",
+				"     usage = mean(usage)) ~> aggregate1",
+				"derivedColumn1 aggregate(groupBy(weekday),",
+				"     usage = mean(usage)) ~> aggregate2",
+				"aggregate2 sort(asc(usage, true)) ~> sort1",
+				"aggregate1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['UsagePerAMandPMcsv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> AvgUsagePerAMandPM",
+				"sort1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['UsagePerDayofWeek'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> AvgUsagePerWeekday"
+			]
+		}
+	}
+}

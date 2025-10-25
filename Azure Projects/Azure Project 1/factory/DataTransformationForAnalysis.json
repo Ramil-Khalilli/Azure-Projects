@@ -1,0 +1,9 @@
+{
+	"name": "DataTransformationForAnalysis",
+	"location": "polandcentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "c4d268c6-8349-4a0c-887c-a30220290f8f",
+		"tenantId": "eba0eec6-5342-4d02-9cf6-de883c645c4e"
+	}
+}
