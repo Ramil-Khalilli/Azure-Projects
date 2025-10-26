@@ -1,0 +1,313 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Raw_Titanic",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AvgSurvivalRatePerPclass",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "AvgSurvivalRatePerGender",
+						"type": "DatasetReference"
+					},
+					"name": "sink2",
+					"description": "Average Survival Rate per Gender."
+				},
+				{
+					"dataset": {
+						"referenceName": "AvgSurvivalRatePerEmbarked",
+						"type": "DatasetReference"
+					},
+					"name": "sink3",
+					"description": "Average Survival Rate per Embarked."
+				},
+				{
+					"dataset": {
+						"referenceName": "AvgAgePerSurvival",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				},
+				{
+					"dataset": {
+						"referenceName": "AvgFarePerSurvival",
+						"type": "DatasetReference"
+					},
+					"name": "sink5",
+					"description": "Average Fare per Survival"
+				},
+				{
+					"dataset": {
+						"referenceName": "AvgSiblingAndPartnerCountPerPclass",
+						"type": "DatasetReference"
+					},
+					"name": "sink6",
+					"description": "Average Sibling and Partner Count per Pclass."
+				},
+				{
+					"dataset": {
+						"referenceName": "AverageSurvivalRate",
+						"type": "DatasetReference"
+					},
+					"name": "sink7",
+					"description": "Average Survival Rate"
+				},
+				{
+					"dataset": {
+						"referenceName": "AverageAge",
+						"type": "DatasetReference"
+					},
+					"name": "sink8",
+					"description": "Average Age of All Passengers in Titanic."
+				}
+			],
+			"transformations": [
+				{
+					"name": "dataTypeChange",
+					"description": "Changing the data types of columns 'pclass, age, sibsp, parch, fare and survived'"
+				},
+				{
+					"name": "removingNulls",
+					"description": "Removing null values."
+				},
+				{
+					"name": "featureSelection",
+					"description": "Removing unnecessary columns containing almost unique values or lots of nulls."
+				},
+				{
+					"name": "AvgSurvivalRatePerPclass",
+					"description": "Average Survival Rate per Pclass"
+				},
+				{
+					"name": "AvgSurvivalRatePerGender",
+					"description": "Average Survival Rate per Gender."
+				},
+				{
+					"name": "AvgSurvivalRatePerEmbarked",
+					"description": "Average Survival Rate per Embarked."
+				},
+				{
+					"name": "AvgAgePerSurvival",
+					"description": "Average Age of Survived and Deceased People."
+				},
+				{
+					"name": "AvgFarePerSurvival",
+					"description": "Average Fare Per Survival"
+				},
+				{
+					"name": "AvgSiblingAndPartnerCountPerPclass",
+					"description": "Average Number of Siblings and Partners per Pclass."
+				},
+				{
+					"name": "AverageSurvivalRate",
+					"description": "Average Survival Rate in General."
+				},
+				{
+					"name": "AverageAge",
+					"description": "Average Age of All Passengers in Titanic."
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pclass as string,",
+				"          survived as string,",
+				"          name as string,",
+				"          sex as string,",
+				"          age as string,",
+				"          sibsp as string,",
+				"          parch as string,",
+				"          ticket as string,",
+				"          fare as string,",
+				"          cabin as string,",
+				"          embarked as string,",
+				"          boat as string,",
+				"          body as string,",
+				"          {home.dest} as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     limit: 100,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(pclass = toInteger(pclass),",
+				"          age = toInteger(age),",
+				"          sibsp = toInteger(sibsp),",
+				"          parch = toInteger(parch),",
+				"          fare = toInteger(fare),",
+				"          survived = toInteger(survived)) ~> dataTypeChange",
+				"dataTypeChange filter(!isNull(age) && embarked != '?',",
+				"     partitionBy('hash', 1)) ~> removingNulls",
+				"removingNulls select(mapColumn(",
+				"          pclass,",
+				"          survived,",
+				"          sex,",
+				"          age,",
+				"          sibsp,",
+				"          parch,",
+				"          fare,",
+				"          embarked",
+				"     ),",
+				"     partitionBy('hash', 1),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> featureSelection",
+				"featureSelection aggregate(groupBy(pclass),",
+				"     survived = mean(survived),",
+				"     partitionBy('hash', 1)) ~> AvgSurvivalRatePerPclass",
+				"featureSelection aggregate(groupBy(sex),",
+				"     survived = mean(survived),",
+				"     partitionBy('hash', 1)) ~> AvgSurvivalRatePerGender",
+				"featureSelection aggregate(groupBy(embarked),",
+				"     survived = mean(survived),",
+				"     partitionBy('hash', 1)) ~> AvgSurvivalRatePerEmbarked",
+				"featureSelection aggregate(groupBy(survived),",
+				"     age = mean(age),",
+				"     partitionBy('hash', 1)) ~> AvgAgePerSurvival",
+				"featureSelection aggregate(groupBy(survived),",
+				"     fare = mean(fare),",
+				"     partitionBy('hash', 1)) ~> AvgFarePerSurvival",
+				"featureSelection aggregate(groupBy(pclass),",
+				"     sibsp = mean(sibsp),",
+				"          parch = mean(parch),",
+				"     partitionBy('hash', 1)) ~> AvgSiblingAndPartnerCountPerPclass",
+				"featureSelection aggregate(survived = mean(survived),",
+				"     partitionBy('hash', 1)) ~> AverageSurvivalRate",
+				"featureSelection aggregate(age = mean(age),",
+				"     partitionBy('hash', 1)) ~> AverageAge",
+				"AvgSurvivalRatePerPclass sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['AvgSurvivalRatePerPclass'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1",
+				"AvgSurvivalRatePerGender sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['AvgSurvivalRatePerGender'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink2",
+				"AvgSurvivalRatePerEmbarked sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['AvgSurvivalRatePerEmbarked'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink3",
+				"AvgAgePerSurvival sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['AvgAgePerSurvival'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink4",
+				"AvgFarePerSurvival sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['AvgFarePerSurvival'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink5",
+				"AvgSiblingAndPartnerCountPerPclass sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['AvgSiblingAndPartnerCountPerPclass'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink6",
+				"AverageSurvivalRate sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['AvgSurvivalRate'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink7",
+				"AverageAge sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Prop_0 as string,",
+				"          Hour as string,",
+				"          am_pm as string,",
+				"          Date as string,",
+				"          KWH as string,",
+				"          usage as string,",
+				"          weekday as string",
+				"     ),",
+				"     partitionFileNames:['AvgAge'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink8"
+			]
+		}
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"name": "FeatureSelectionandCleaning",
+	"location": "polandcentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "95bcfbdf-3174-42fb-9ed0-dfa7b4ed38d9",
+		"tenantId": "eba0eec6-5342-4d02-9cf6-de883c645c4e"
+	}
+}

@@ -1,0 +1,52 @@
+{
+	"name": "AvgSurvivalRatePerEmbarked",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AvgSurvivalRatePerEmbarked",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"container": "dataset-for-cleaning"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Prop_0",
+				"type": "String"
+			},
+			{
+				"name": "Hour",
+				"type": "String"
+			},
+			{
+				"name": "am_pm",
+				"type": "String"
+			},
+			{
+				"name": "Date",
+				"type": "String"
+			},
+			{
+				"name": "KWH",
+				"type": "String"
+			},
+			{
+				"name": "usage",
+				"type": "String"
+			},
+			{
+				"name": "weekday",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
