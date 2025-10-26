@@ -1,0 +1,85 @@
+{
+	"name": "AdultIncomeDataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AdultIncomeDataset",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "adult.data",
+				"container": "adult-income-dataset-analysis"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "age",
+				"type": "String"
+			},
+			{
+				"name": "workclass",
+				"type": "String"
+			},
+			{
+				"name": "fnlwgt",
+				"type": "String"
+			},
+			{
+				"name": "education",
+				"type": "String"
+			},
+			{
+				"name": "education_num",
+				"type": "String"
+			},
+			{
+				"name": "marital_status",
+				"type": "String"
+			},
+			{
+				"name": "occupation",
+				"type": "String"
+			},
+			{
+				"name": "relationship",
+				"type": "String"
+			},
+			{
+				"name": "race",
+				"type": "String"
+			},
+			{
+				"name": "sex",
+				"type": "String"
+			},
+			{
+				"name": "capital_gain",
+				"type": "String"
+			},
+			{
+				"name": "capital_loss",
+				"type": "String"
+			},
+			{
+				"name": "hours_per_week",
+				"type": "String"
+			},
+			{
+				"name": "native_country",
+				"type": "String"
+			},
+			{
+				"name": "income",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
